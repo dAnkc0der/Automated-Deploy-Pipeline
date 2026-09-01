@@ -1,0 +1,112 @@
+---
+- name: Install and configure docker
+  hosts: all
+  become: true
+  vars_files:
+    - roles/vars/main.yml
+  gather_facts: true
+  tasks:
+    - name: Uninstall packages
+      ansible.builtin.dnf:
+        name:
+          - docker
+          - docker-client
+          - docker-client-latest
+          - docker-common
+          - docker-latest
+          - docker-latest-logrotate
+          - docker-logrotate
+          - docker-engine
+          - podman
+          - runc
+        state: absent
+
+    - name: Install package
+      ansible.builtin.dnf:
+        name: dnf-plugins-core
+        state: present
+
+    - name: Add Docker repo
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/rhel/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+        mode: "0644"
+
+    - name: Install Docker packages
+      ansible.builtin.dnf:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+      register: docker_install
+
+    - name: Reboot machine (manual)
+      ansible.builtin.shell: sleep 2 && shutdown -r now
+      async: 1
+      poll: 0
+      when: docker_install.changed
+      ignore_errors: true
+
+    - name: Wait for host to come back
+      ansible.builtin.wait_for_connection:
+        connect_timeout: 20
+        sleep: 5
+        delay: 10
+        timeout: 300
+      when: docker_install.changed
+
+    # - name: Reboot machine
+    #   ansible.builtin.reboot:
+    #     msg: "Reboot started"
+    #     reboot_timeout: 300
+    #     test_command: uptime
+    #   when: docker_install.changed
+
+    - name: Start and enable docker
+      ansible.builtin.systemd_service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add user to docker group
+      ansible.builtin.user:
+        name: "{{ user_name }}"
+        groups: docker
+        append: true
+
+    - name: Install firewalld
+      ansible.builtin.dnf:
+        name:
+          - firewalld
+        state: present
+
+    - name: Ensure firewalld is running
+      ansible.builtin.systemd_service:
+        name: firewalld
+        state: started
+        enabled: true
+
+    - name: Open port 8000 and 5432
+      ansible.posix.firewalld:
+        port: "{{ item }}"
+        permanent: true
+        state: enabled
+        immediate: true
+      loop:
+        - 8000/tcp
+        - 5432/tcp
+
+    - name: Create app directory
+      ansible.builtin.file:
+        path: /opt/deployment-api
+        state: directory
+        owner: "{{ user_name }}"
+        mode: "0755"
+
+    - name: Install AWS CLI
+      ansible.builtin.dnf:
+        name: awscli2
+        state: present

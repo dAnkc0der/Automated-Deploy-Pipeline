@@ -1,0 +1,8 @@
+---
+# Copy this file to vault.yml, replace every placeholder, then encrypt it:
+# ansible-vault encrypt ansible/group_vars/all/vault.yml
+vault_db_host: database.example.com
+vault_db_port: "5432"
+vault_db_name: deployment_api
+vault_db_user: deployment_user
+vault_db_password: replace-with-a-secure-password

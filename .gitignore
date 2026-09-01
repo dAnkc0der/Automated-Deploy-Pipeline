@@ -1,0 +1,20 @@
+# Credentials and deployment-specific configuration
+.env
+ansible/inventory.ini
+ansible/roles/vars/main.yml
+ansible/group_vars/all/vault.yml
+*.pem
+*.key
+
+# Local Python environment and generated files
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Editor and operating-system files
+.vscode/
+.DS_Store

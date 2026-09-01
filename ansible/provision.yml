@@ -1,0 +1,44 @@
+---
+- name: Configure EC2 instance and docker
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - roles/vars/main.yml
+  tasks:
+    - name: Launch EC2 instance
+      amazon.aws.ec2_instance:
+        name: "{{ ec2_name }}"
+        region: "{{ aws_region }}"
+        key_name: "{{ key_name }}"
+        instance_type: "{{ instance_type }}"
+        image_id: "{{ ami_id }}"
+        security_groups:
+          - "{{ security_group_id }}"
+        iam_instance_profile: ec2-ecr-pull-role
+        state: present
+        wait_timeout: 300
+      register: ec2_instance
+
+    - name: Save EC2 public IP
+      ansible.builtin.set_fact:
+        ec2_public_ip: "{{ ec2_instance.instances[0].public_ip_address }}"
+
+    - name: Create dynamic entry
+      ansible.builtin.copy:
+        dest: inventory.ini
+        mode: "0644"
+        content: |
+          [hosts]
+          {{ ec2_public_ip }} ansible_user=ec2-user ansible_ssh_private_key_file={{ ssh_key_path }}
+
+    - name: Show created host
+      ansible.builtin.debug:
+        msg: "EC2 instance is ready at {{ ec2_public_ip }}"
+
+    - name: Wait for SSH to come up
+      ansible.builtin.wait_for:
+        host: "{{ ec2_public_ip }}"
+        port: 22
+        delay: 10
+        timeout: 300
