@@ -1,8 +1,7 @@
 # Credentials and deployment-specific configuration
 .env
 ansible/inventory.ini
-ansible/roles/vars/main.yml
-ansible/group_vars/all/vault.yml
+ansible/.vault_pass.txt
 *.pem
 *.key
 

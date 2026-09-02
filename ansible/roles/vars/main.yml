@@ -1,0 +1,11 @@
+---
+# vars file for roles
+ec2_name: "docker-ec2-6"
+aws_region: "us-east-1"
+key_name: "Key-Pair-1"
+instance_type: "t3.micro"
+ami_id: "ami-00adafae70b8029d8"
+security_group_id: "sg-0984dfd4e1b532d33"
+user_name: "ec2-user"
+ssh_key_path: "~/Downloads/AWS-Key/Key-Pair-1.pem"
+ecr_registry: "590728475857.dkr.ecr.us-east-1.amazonaws.com"
