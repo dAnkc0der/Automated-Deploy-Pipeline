@@ -17,7 +17,7 @@ app.include_router(user_router)
 def root():
     return {"Hello": "World!"}
 
-@app.get("/health-broken")
+@app.get("/health")
 def health(db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))
