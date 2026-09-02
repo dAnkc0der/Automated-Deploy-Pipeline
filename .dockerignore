@@ -1,5 +1,15 @@
 .venv/
-__pycache__/
-*.pyc
 .env
 .git/
+.gitignore
+.github/
+README.md
+ansible/
+docker-compose.yml
+docker-compose.yml.j2
+docker-compose.deploy.yml.j2
+.vscode/
+.dockerignore
+Dockerfile
+**/__pycache__/
+**/*.pyc
